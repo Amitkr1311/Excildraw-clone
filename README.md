@@ -56,3 +56,23 @@ Make sure you have:
 git clone https://github.com/Amitkr1311/Excildraw-clone.git
 cd Excildraw-clone
 pnpm install
+
+```
+# 🤝 Contributing
+
+# Contributions are welcome! 💪
+
+Fork the repo
+Create your feature branch
+```
+git checkout -b feature/awesome-update
+```
+Commit your changes
+```
+git commit -m "Add awesome feature"
+```
+Push and open a PR
+```
+git push origin feature/awesome-update
+```
+<p align="center">Made with ❤️ by <a href="https://github.com/Amitkr1311">Amit Kumar</a></p>
