@@ -4,17 +4,35 @@ import { JWT_SECRET } from "@repo/backend-common/config";
 
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
-    const token = req.headers["authorization"] ?? "";
+    try {
+        // Get token from Authorization header
+        const authHeader = req.headers["authorization"];
+        
+        if (!authHeader) {
+            res.status(401).json({
+                message: "No token provided"
+            })
+            return;
+        }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+        // Extract token from "Bearer <token>" format
+        const token = authHeader.startsWith("Bearer ") 
+            ? authHeader.substring(7) 
+            : authHeader;
 
-    if (decoded) {
+        // Verify token
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+        // Attach userId to request
         // @ts-ignore: TODO: Fix this
         req.userId = decoded.userId;
+        
         next();
-    } else {
+    } catch (error) {
+        // jwt.verify throws an error if token is invalid or expired
+        console.error('Token verification error:', error);
         res.status(403).json({
-            message: "Unauthorized"
+            message: "Invalid or expired token"
         })
     }
 }
