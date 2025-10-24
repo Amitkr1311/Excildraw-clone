@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import axios from "axios";
+import { HTTP_BACKEND } from "@/config";
 
 export function AuthPage({ isSignin }: { isSignin: boolean }) {
   const [form, setForm] = useState({ name: "", username: "", password: "" });
@@ -26,8 +27,8 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
 
       const res = await axios.post(
         isSignin
-          ? "http://localhost:3002/signin"
-          : "http://localhost:3002/signup",
+          ? `${HTTP_BACKEND}/signin`
+          : `${HTTP_BACKEND}/signup`,
         body,
         {
           headers: { "Content-Type": "application/json" }

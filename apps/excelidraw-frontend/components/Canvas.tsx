@@ -1,10 +1,9 @@
-import { initDraw } from "@/draw";
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react"; // Add Eraser import
 import { Game } from "@/draw/Game";
 
-export type Tool = "circle" | "rect" | "pencil";
+export type Tool = "circle" | "rect" | "pencil" | "eraser";
 
 export function Canvas({
     roomId,
@@ -22,7 +21,6 @@ export function Canvas({
     }, [selectedTool, game]);
 
     useEffect(() => {
-
         if (canvasRef.current) {
             const g = new Game(canvasRef.current, roomId, socket);
             setGame(g);
@@ -31,8 +29,6 @@ export function Canvas({
                 g.destroy();
             }
         }
-
-
     }, [canvasRef]);
 
     return <div style={{
@@ -61,12 +57,28 @@ function Topbar({selectedTool, setSelectedTool}: {
                     activated={selectedTool === "pencil"}
                     icon={<Pencil />}
                 />
-                <IconButton onClick={() => {
-                    setSelectedTool("rect")
-                }} activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} ></IconButton>
-                <IconButton onClick={() => {
-                    setSelectedTool("circle")
-                }} activated={selectedTool === "circle"} icon={<Circle />}></IconButton>
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("rect")
+                    }} 
+                    activated={selectedTool === "rect"} 
+                    icon={<RectangleHorizontalIcon />} 
+                />
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("circle")
+                    }} 
+                    activated={selectedTool === "circle"} 
+                    icon={<Circle />}
+                />
+                {/* Add Eraser Button */}
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("eraser")
+                    }} 
+                    activated={selectedTool === "eraser"} 
+                    icon={<Eraser />}
+                />
             </div>
         </div>
 }
