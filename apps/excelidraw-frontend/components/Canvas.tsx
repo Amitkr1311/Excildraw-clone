@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react"; // Add Eraser import
+import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react";
 import { Game } from "@/draw/Game";
 
 export type Tool = "circle" | "rect" | "pencil" | "eraser";
@@ -14,7 +14,7 @@ export function Canvas({
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [game, setGame] = useState<Game>();
-    const [selectedTool, setSelectedTool] = useState<Tool>("circle")
+    const [selectedTool, setSelectedTool] = useState<Tool>("circle");
 
     useEffect(() => {
         game?.setTool(selectedTool);
@@ -31,20 +31,29 @@ export function Canvas({
         }
     }, [canvasRef]);
 
-    return <div style={{
-        height: "100vh",
-        overflow: "hidden"
-    }}>
-        <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
-        <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
-    </div>
+    return (
+        <div style={{
+            height: "1000vh",
+            overflow: "hidden",
+            backgroundColor: "#000"
+        }}>
+            <canvas 
+                ref={canvasRef} 
+                width={window.innerWidth} 
+                height={window.innerHeight}
+                style={{ display: "block" }}
+            />
+            <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
+        </div>
+    );
 }
 
 function Topbar({selectedTool, setSelectedTool}: {
     selectedTool: Tool,
     setSelectedTool: (s: Tool) => void
 }) {
-    return <div style={{
+    return (
+        <div style={{
             position: "fixed",
             top: 10,
             left: 10
@@ -62,7 +71,7 @@ function Topbar({selectedTool, setSelectedTool}: {
                         setSelectedTool("rect")
                     }} 
                     activated={selectedTool === "rect"} 
-                    icon={<RectangleHorizontalIcon />} 
+                    icon={<RectangleHorizontalIcon />}
                 />
                 <IconButton 
                     onClick={() => {
@@ -71,7 +80,6 @@ function Topbar({selectedTool, setSelectedTool}: {
                     activated={selectedTool === "circle"} 
                     icon={<Circle />}
                 />
-                {/* Add Eraser Button */}
                 <IconButton 
                     onClick={() => {
                         setSelectedTool("eraser")
@@ -81,4 +89,5 @@ function Topbar({selectedTool, setSelectedTool}: {
                 />
             </div>
         </div>
+    );
 }
