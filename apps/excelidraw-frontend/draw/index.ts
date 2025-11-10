@@ -18,6 +18,13 @@ type Shape = {
     startY: number;
     endX: number;
     endY: number;
+} | {
+    type: "text";
+    x: number;
+    y: number;
+    content: string;
+    color?: string;
+    fontSize?: number;
 }
 
 export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {

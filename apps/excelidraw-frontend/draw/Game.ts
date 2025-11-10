@@ -21,7 +21,15 @@ type Shape = {
     endX: number;
     endY: number;
     color?: string;
+} | {
+    type: "text";
+    x: number;
+    y: number;
+    content: string;
+    color?: string;
+    fontSize?: number;
 }
+
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -32,6 +40,7 @@ export class Game {
     private startX = 0;
     private startY = 0;
     private selectedTool: Tool = "circle";
+    private backgroundColor: string = "#000000";
 
     // Pan and zoom state
     private offsetX = 0;
@@ -40,6 +49,12 @@ export class Game {
     private isPanning = false;
     private panStartX = 0;
     private panStartY = 0;
+
+    // Text-specific state
+    private isTyping = false;
+    private textInputX = 0;
+    private textInputY = 0;
+    private currentText = "";
 
     socket: WebSocket;
 
@@ -53,6 +68,20 @@ export class Game {
         this.init();
         this.initHandlers();
         this.initMouseHandlers();
+        this.initKeyboardHandlers();
+        this.backgroundColor = "#000";
+    }
+
+    setBackgroundColor(color: string) {
+        this.backgroundColor = color;
+        this.clearCanvas();
+    }
+
+    /**
+     * Get current background color
+     */
+    getBackgroundColor(): string {
+        return this.backgroundColor;
     }
 
     /**
@@ -77,6 +106,70 @@ export class Game {
         };
     }
 
+    /**
+     * Initialize keyboard event listeners for text input
+     */
+    initKeyboardHandlers() {
+        window.addEventListener("keydown", this.keyDownHandler);
+    }
+
+     /**
+     * Handle keyboard input for text tool
+     * Captures typed characters and creates text shapes
+     */
+    keyDownHandler = (e: KeyboardEvent) => {
+        if (!this.isTyping) return;
+
+        if (e.key === "Enter") {
+            // Finish typing and create the text shape
+            if (this.currentText.trim().length > 0) {
+                const shape: Shape = {
+                    type: "text",
+                    x: this.textInputX,
+                    y: this.textInputY,
+                    content: this.currentText,
+                    color: "rgba(255, 255, 255)",
+                    fontSize: 24
+                };
+
+                this.existingShapes.push(shape);
+                this.socket.send(JSON.stringify({
+                    type: "chat",
+                    message: JSON.stringify({ shape }),
+                    roomId: this.roomId
+                }));
+            }
+
+            // Reset text input state
+            this.isTyping = false;
+            this.currentText = "";
+            this.clearCanvas();
+        } else if (e.key === "Backspace") {
+            // Remove last character
+            this.currentText = this.currentText.slice(0, -1);
+            this.clearCanvas();
+            this.drawTextPreview();
+        } else if (e.key === "Escape") {
+            // Cancel text input
+            this.isTyping = false;
+            this.currentText = "";
+            this.clearCanvas();
+        } else if (e.key.length === 1) {
+            // Add character to current text (only single characters, not special keys)
+            this.currentText += e.key;
+            this.clearCanvas();
+            this.drawTextPreview();
+        }
+    };
+
+    drawTextPreview() {
+        if (!this.isTyping) return;
+
+        this.ctx.fillStyle = "rgba(255, 255, 255)";
+        this.ctx.font = `${16 | this.scale}px Arial`;
+        this.ctx.fillText(this.currentText + "|", this.textInputX, this.textInputY);
+    }
+
     destroy() {
         this.canvas.removeEventListener("mousedown", this.mouseDownHandler);
         this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
@@ -84,8 +177,14 @@ export class Game {
         this.canvas.removeEventListener("wheel", this.wheelHandler);
     }
 
-    setTool(tool: "circle" | "pencil" | "rect" | "eraser") {
+    setTool(tool: "circle" | "pencil" | "rect" | "eraser" | "text") {
         this.selectedTool = tool;
+        // Cancel any ongoing text input when switching tools
+        if (this.isTyping && tool !== "text") {
+            this.isTyping = false;
+            this.currentText = "";
+            this.clearCanvas();
+        }
     }
 
     async init() {
@@ -114,7 +213,7 @@ export class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw background
-        this.ctx.fillStyle = "rgba(0, 0, 0)";
+        this.ctx.fillStyle = this.backgroundColor //"rgba(0, 0, 0)";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Restore transform
@@ -155,8 +254,18 @@ export class Game {
                 this.ctx.lineTo(shape.endX, shape.endY);
                 this.ctx.stroke();
                 this.ctx.closePath();
+            } else if (shape.type === "text") {
+                // Render text shape
+                const fontSize = (shape.fontSize || 16) / this.scale;
+                this.ctx.font = `${fontSize}px Arial`;
+                this.ctx.fillStyle = color;
+                this.ctx.fillText(shape.content, shape.x, shape.y);
             }
         });
+        // Draw text preview if currently typing
+        if (this.isTyping) {
+            this.drawTextPreview();
+        }
     }
 
     /**
@@ -192,6 +301,16 @@ export class Game {
 
     mouseDownHandler = (e: MouseEvent) => {
         const coords = this.getCanvasCoordinates(e);
+
+        // Text tool: Click to start typing
+        if (this.selectedTool === "text") {
+            const worldCoords = this.screenToWorld(coords.x, coords.y);
+            this.isTyping = true;
+            this.textInputX = worldCoords.x;
+            this.textInputY = worldCoords.y;
+            this.currentText = "";
+            return;
+        }
 
         // Middle mouse button or Space+Click for panning
         if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
@@ -351,5 +470,6 @@ export class Game {
         this.canvas.addEventListener("mouseup", this.mouseUpHandler);
         this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
         this.canvas.addEventListener("wheel", this.wheelHandler);
+        window.removeEventListener("keydown", this.keyDownHandler);
     }
 }

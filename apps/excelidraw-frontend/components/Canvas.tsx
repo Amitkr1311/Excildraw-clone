@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, Eraser, Type } from "lucide-react";
 import { Game } from "@/draw/Game";
 
-export type Tool = "circle" | "rect" | "pencil" | "eraser";
+export type Tool = "circle" | "rect" | "pencil" | "eraser" | "text";
 
 export function Canvas({
     roomId,
@@ -35,7 +35,7 @@ export function Canvas({
         <div style={{
             height: "1000vh",
             overflow: "hidden",
-            backgroundColor: "#000"
+            //backgroundColor: "#0d1312d8"
         }}>
             <canvas 
                 ref={canvasRef} 
@@ -86,6 +86,14 @@ function Topbar({selectedTool, setSelectedTool}: {
                     }} 
                     activated={selectedTool === "eraser"} 
                     icon={<Eraser />}
+                />
+                {/* // text type  */}
+                <IconButton 
+                    onClick={() => {
+                        setSelectedTool("text")
+                    }}
+                    activated={selectedTool==="text"}
+                    icon={<Type />}
                 />
             </div>
         </div>
