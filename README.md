@@ -53,8 +53,8 @@ Make sure you have:
 ### 🛠️ Installation  
 
 ```bash
-git clone https://github.com/Amitkr1311/Excildraw-clone.git
-cd Excildraw-clone
+git clone https://github.com/Amitkr1311/SyncDraw.git
+cd SyncDraw
 pnpm install
 
 ```
